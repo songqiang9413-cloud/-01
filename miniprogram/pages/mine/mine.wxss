@@ -1,0 +1,157 @@
+.mine {
+  padding: 28rpx 28rpx 60rpx;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #4d8bff 0%, #337aff 60%, #2b6bf0 100%);
+  border-radius: var(--radius);
+  padding: 40rpx 32rpx;
+  box-shadow: 0 12rpx 30rpx rgba(51, 122, 255, 0.25);
+}
+
+.avatar-btn {
+  width: 128rpx;
+  height: 128rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  flex-shrink: 0;
+  line-height: normal;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
+.avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  display: block;
+}
+
+.user-body {
+  flex: 1;
+  margin-left: 28rpx;
+  min-width: 0;
+}
+
+.nickname {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #fff;
+  height: 52rpx;
+}
+
+.nickname-placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.user-tip {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 34rpx 0;
+  margin-top: -30rpx;
+  position: relative;
+  z-index: 2;
+  box-shadow: var(--shadow);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 42rpx;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+}
+
+.stat-label {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: var(--text-weak);
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 56rpx;
+  background: var(--line);
+}
+
+.ad-btn {
+  margin-top: 28rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 30rpx;
+}
+
+.list-card {
+  margin-top: 28rpx;
+  padding: 0 32rpx;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 108rpx;
+  border-bottom: 2rpx solid var(--line);
+  background: transparent;
+  font-size: 29rpx;
+  color: var(--text);
+  padding: 0;
+  line-height: 108rpx;
+  text-align: left;
+  border-radius: 0;
+}
+
+.list-btn::after {
+  border: none;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-right {
+  display: flex;
+  align-items: center;
+}
+
+.list-value {
+  color: var(--text-weak);
+  font-size: 26rpx;
+  margin-right: 12rpx;
+}
+
+.list-arrow {
+  color: #c7cdd8;
+  font-size: 34rpx;
+}
+
+.mine-footer {
+  margin-top: 60rpx;
+  text-align: center;
+}
+
+.version {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #c7cdd8;
+}

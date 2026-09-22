@@ -1,0 +1,83 @@
+<view class="page result">
+  <block wx:if="{{notFound}}">
+    <view class="empty">
+      <view>没有找到这条记录</view>
+      <button class="btn-ghost empty-btn" bindtap="goParseMore">去解析新的视频</button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <!-- 预览区 -->
+    <view class="preview-card">
+      <video
+        wx:if="{{isVideo}}"
+        class="preview-media"
+        src="{{mediaSrc}}"
+        poster="{{record.cover}}"
+        object-fit="contain"
+        show-center-play-btn
+        enable-play-gesture
+        bindplay="onVideoPlay"
+        binderror="onVideoError"
+      ></video>
+      <image
+        wx:else
+        class="preview-media"
+        src="{{mediaSrc}}"
+        mode="widthFix"
+        show-menu-by-longpress
+      ></image>
+    </view>
+
+    <!-- 信息 -->
+    <view class="card info-card">
+      <view class="info-title">{{record.title || '未获取到标题'}}</view>
+      <view class="info-meta">
+        <text class="chip">{{platformName}}</text>
+        <text class="text-weak">{{timeText}}</text>
+      </view>
+      <view class="info-tip">解析结果仅限个人合法用途，请尊重原作者版权</view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="actions">
+      <button
+        class="btn-primary"
+        bindtap="onSave"
+        hover-class="btn-hover"
+        disabled="{{saving}}"
+      >{{saving ? '保存中 ' + progress + '%' : (isVideo ? '保存视频到相册' : '保存图片到相册')}}</button>
+
+      <!-- 保存次数提示：看广告领的次数，24 小时有效 -->
+      <view class="credit-line">
+        <block wx:if="{{credits > 0}}">
+          还能保存 <text class="credit-num">{{credits}}</text> 次<text wx:if="{{remainHours > 0}}">，{{remainHours}} 小时内有效</text>
+        </block>
+        <block wx:else>
+          保存前看一次广告，可得 {{rewardPerAd}} 次（{{validHours}} 小时内有效）
+        </block>
+      </view>
+
+      <view class="action-row">
+        <button class="btn-ghost half" bindtap="onCopy" hover-class="btn-hover">复制直链</button>
+        <button class="btn-ghost half" bindtap="onCopyText" hover-class="btn-hover">复制文案</button>
+      </view>
+
+      <button class="btn-ghost back-btn" bindtap="goHome" hover-class="btn-hover">返回首页</button>
+      <button class="link-btn" open-type="share">分享给朋友</button>
+    </view>
+
+    <!-- 广告位 -->
+    <view wx:if="{{showBanner}}" class="ad-wrap" catchtap="onAdTap" data-slot="result_bottom">
+      <ad
+        unit-id="{{bannerUnit}}"
+        bindload="onAdLoad"
+        binderror="onAdError"
+        data-slot="result_bottom"
+      ></ad>
+      <view class="ad-tag">广告</view>
+    </view>
+  </block>
+
+  <privacy-popup />
+</view>

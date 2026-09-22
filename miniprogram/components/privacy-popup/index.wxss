@@ -1,0 +1,66 @@
+.privacy-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.privacy-popup {
+  width: 600rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 44rpx 40rpx 32rpx;
+}
+
+.privacy-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  color: #1b1f27;
+}
+
+.privacy-desc {
+  margin-top: 24rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #4b5563;
+}
+
+.privacy-link {
+  color: #337aff;
+}
+
+.privacy-btns {
+  display: flex;
+  margin-top: 40rpx;
+}
+
+.privacy-btn {
+  flex: 1;
+  height: 84rpx;
+  line-height: 84rpx;
+  font-size: 29rpx;
+  border-radius: 42rpx;
+  padding: 0;
+  margin: 0 12rpx;
+}
+
+.privacy-btn::after {
+  border: none;
+}
+
+.privacy-btn.ghost {
+  background: #f2f4f8;
+  color: #6b7280;
+}
+
+.privacy-btn.primary {
+  background: #337aff;
+  color: #fff;
+}

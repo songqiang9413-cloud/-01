@@ -1,0 +1,28 @@
+<view class="page history">
+  <block wx:if="{{isEmpty}}">
+    <view class="empty">
+      <view>还没有解析记录</view>
+      <button class="btn-ghost empty-btn" bindtap="goParse">去解析一个</button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="list-tip text-weak">记录只保存在本机，最多保留 50 条</view>
+    <view class="record" wx:for="{{list}}" wx:key="id" bindtap="onOpen" data-id="{{item.id}}">
+      <image class="record-cover" src="{{item.cover}}" mode="aspectFill" wx:if="{{item.cover}}"></image>
+      <view class="record-cover record-cover-empty" wx:else>
+        <text>{{item.isVideo ? '视频' : '图片'}}</text>
+      </view>
+      <view class="record-body">
+        <view class="record-title">{{item.title}}</view>
+        <view class="record-meta">
+          <text class="chip">{{item.platformName}}</text>
+          <text class="text-weak">{{item.timeText}}</text>
+        </view>
+      </view>
+      <view class="record-del" catchtap="onDelete" data-id="{{item.id}}">删除</view>
+    </view>
+
+    <view class="clear-all" bindtap="onClearAll">清空全部记录</view>
+  </block>
+</view>

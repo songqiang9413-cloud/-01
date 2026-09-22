@@ -1,0 +1,70 @@
+<view class="page mine">
+  <!-- 用户卡片 -->
+  <view class="user-card">
+    <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image class="avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+    </button>
+    <view class="user-body">
+      <input
+        class="nickname"
+        type="nickname"
+        value="{{nickName}}"
+        placeholder="点击设置昵称"
+        placeholder-class="nickname-placeholder"
+        bindinput="onNickInput"
+        bindblur="onNickBlur"
+      />
+      <view class="user-tip">头像昵称仅保存在你的手机上</view>
+    </view>
+  </view>
+
+  <!-- 数据卡片 -->
+  <view class="stat-card">
+    <view class="stat-item" bindtap="onWatchAd">
+      <view class="stat-num">{{wallet.credits}}</view>
+      <view class="stat-label">可保存次数</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="stat-num">{{todayParse}}</view>
+      <view class="stat-label">今日已解析</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="stat-num">{{totalParse}}</view>
+      <view class="stat-label">累计解析</view>
+    </view>
+  </view>
+
+  <button class="btn-primary ad-btn" bindtap="onWatchAd" hover-class="btn-hover" wx:if="{{showRewardBtn}}">
+    看广告，领 {{wallet.reward_per_ad}} 次保存机会
+  </button>
+
+  <!-- 功能列表 -->
+  <view class="card list-card">
+    <view class="list-item" bindtap="goHistory">
+      <text class="list-label">解析记录</text>
+      <view class="list-right">
+        <text class="list-value">{{historyCount}}</text>
+        <text class="list-arrow">›</text>
+      </view>
+    </view>
+    <button class="list-item list-btn" open-type="contact">
+      <text class="list-label">联系客服</text>
+      <text class="list-arrow">›</text>
+    </button>
+    <button class="list-item list-btn" open-type="share">
+      <text class="list-label">分享给朋友</text>
+      <text class="list-arrow">›</text>
+    </button>
+    <view class="list-item" bindtap="onClearCache">
+      <text class="list-label">清除本地缓存</text>
+      <text class="list-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="mine-footer">
+    <view class="text-weak">解析结果仅供个人合法用途，请尊重原作者版权</view>
+    <view class="version">v{{version}}</view>
+  </view>
+</view>

@@ -1,0 +1,107 @@
+<view class="page home">
+  <view class="hero">
+    <view class="hero-title">短视频去水印</view>
+    <view class="hero-sub">粘贴分享链接，一键拿到无水印原片</view>
+  </view>
+
+  <!-- 输入卡片 -->
+  <view class="card input-card fade-in">
+    <textarea
+      class="url-input"
+      value="{{inputUrl}}"
+      bindinput="onInput"
+      placeholder="把短视频 App 里的「复制链接」粘贴到这里"
+      placeholder-class="url-placeholder"
+      maxlength="800"
+      auto-height
+      show-confirm-bar="{{false}}"
+      cursor-spacing="20"
+    />
+    <view class="input-actions">
+      <view wx:if="{{detectPlatformName}}" class="platform-chip">{{detectPlatformName}}</view>
+      <view class="input-spacer"></view>
+      <view wx:if="{{inputUrl}}" class="action-btn" bindtap="onClear">清空</view>
+      <view class="action-btn action-btn-main" bindtap="onPaste">粘贴链接</view>
+    </view>
+  </view>
+
+  <button
+    class="btn-primary submit-btn"
+    bindtap="onSubmit"
+    hover-class="btn-hover"
+    disabled="{{parsing}}"
+  >{{parsing ? loadingTip : '一键去水印'}}</button>
+
+  <view class="quota-line">
+    <block wx:if="{{credits > 0}}">
+      <text>还能保存 <text class="quota-num">{{credits}}</text> 次<text wx:if="{{remainHours > 0}}">（{{remainHours}} 小时内有效）</text></text>
+    </block>
+    <block wx:else>
+      <text>解析免费 · 保存时看一次广告可得 <text class="quota-num">{{rewardPerAd}}</text> 次</text>
+    </block>
+  </view>
+
+  <!-- 支持平台 -->
+  <view class="card platforms-card">
+    <view class="section-title">支持的平台</view>
+    <view class="platform-list">
+      <view class="platform-item" wx:for="{{platforms}}" wx:key="*this">{{item}}</view>
+    </view>
+    <view class="text-weak platform-tip">粘贴对应的分享链接即可，链接失效或平台改版时可能会解析失败</view>
+  </view>
+
+  <!-- 使用步骤 -->
+  <view class="card steps-card">
+    <view class="section-title">三步搞定</view>
+    <view class="step" wx:for="{{steps}}" wx:key="n">
+      <view class="step-num">{{item.n}}</view>
+      <view class="step-body">
+        <view class="step-title">{{item.t}}</view>
+        <view class="step-desc">{{item.d}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 广告位：banner -->
+  <view wx:if="{{showBanner}}" class="ad-wrap" catchtap="onAdTap" data-slot="home_bottom">
+    <ad
+      unit-id="{{bannerUnit}}"
+      bindload="onAdLoad"
+      binderror="onAdError"
+      data-slot="home_bottom"
+    ></ad>
+    <view class="ad-tag">广告</view>
+  </view>
+
+  <!-- 常见问题 -->
+  <view class="card faq-card">
+    <view class="faq-head" bindtap="toggleFaq">
+      <view class="section-title faq-title">常见问题</view>
+      <view class="faq-arrow {{faqOpen ? 'faq-arrow-open' : ''}}">›</view>
+    </view>
+    <view wx:if="{{faqOpen}}" class="faq-body fade-in">
+      <view class="faq-item">
+        <view class="faq-q">Q：为什么解析失败？</view>
+        <view class="faq-a">多为链接已过期、作品被删除，或平台改了接口。重新复制一次最新链接再试即可。</view>
+      </view>
+      <view class="faq-item">
+        <view class="faq-q">Q：保存到相册没反应？</view>
+        <view class="faq-a">首次保存需要授权相册权限；如果之前拒绝过，在「我的 → 设置」里重新打开。</view>
+      </view>
+      <view class="faq-item">
+        <view class="faq-q">Q：下载下来还是有水印？</view>
+        <view class="faq-a">部分作者直接把水印做进了画面里，这类视频无法去除。</view>
+      </view>
+      <view class="faq-item">
+        <view class="faq-q">Q：可以把解析结果发到别处吗？</view>
+        <view class="faq-a">请尊重原作者版权，解析结果仅限个人合法用途，不要用于二次传播或商用。</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice copyright">
+    本工具仅供个人学习与合法用途，请勿用于侵犯他人著作权的场景。
+  </view>
+
+  <view class="footer-link" bindtap="goHistory">查看解析记录 ›</view>
+</view>

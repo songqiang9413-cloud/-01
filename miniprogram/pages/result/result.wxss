@@ -1,0 +1,110 @@
+.result {
+  padding: 24rpx 28rpx 60rpx;
+}
+
+.preview-card {
+  background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+}
+
+.preview-media {
+  width: 100%;
+  display: block;
+}
+
+.info-card {
+  margin-top: 24rpx;
+}
+
+.info-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.info-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+}
+
+.chip {
+  font-size: 22rpx;
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: 24rpx;
+  padding: 6rpx 20rpx;
+}
+
+.info-tip {
+  margin-top: 20rpx;
+  font-size: 23rpx;
+  color: var(--text-weak);
+  line-height: 1.6;
+}
+
+.actions {
+  margin-top: 32rpx;
+}
+
+.credit-line {
+  margin-top: 16rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--text-weak);
+  line-height: 1.6;
+}
+
+.credit-num {
+  color: #337aff;
+  font-weight: 600;
+  font-size: 28rpx;
+  padding: 0 4rpx;
+}
+
+.action-row {
+  display: flex;
+  margin-top: 22rpx;
+}
+
+.half {
+  flex: 1;
+}
+
+.half:first-child {
+  margin-right: 20rpx;
+}
+
+.back-btn {
+  margin-top: 22rpx;
+}
+
+.link-btn {
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 26rpx;
+  margin-top: 18rpx;
+  line-height: 2.4;
+}
+
+.link-btn::after {
+  border: none;
+}
+
+.ad-wrap {
+  margin-top: 32rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.empty-btn {
+  margin-top: 40rpx;
+  width: 420rpx;
+}

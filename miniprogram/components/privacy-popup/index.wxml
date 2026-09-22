@@ -1,0 +1,18 @@
+<view wx:if="{{show}}" class="privacy-mask">
+  <view class="privacy-popup">
+    <view class="privacy-title">用户隐私保护提示</view>
+    <view class="privacy-desc">
+      感谢你使用本小程序。为完成「保存视频/图片到相册」，我们需要使用你的相册（仅写入）权限。
+      请阅读并同意<text class="privacy-link" bindtap="openContract">《用户隐私保护指引》</text>后再继续。
+    </view>
+    <view class="privacy-btns">
+      <button class="privacy-btn ghost" bindtap="onDisagree">拒绝</button>
+      <button
+        id="agree-btn"
+        class="privacy-btn primary"
+        open-type="agreePrivacyAuthorization"
+        bindagreeprivacyauthorization="onAgree"
+      >同意</button>
+    </view>
+  </view>
+</view>

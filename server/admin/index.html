@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>去水印小程序 · 数据看板</title>
+<style>
+  :root {
+    --primary: #337aff;
+    --primary-light: #eaf1ff;
+    --text: #1b1f27;
+    --sub: #6b7280;
+    --weak: #9aa3b2;
+    --line: #eceff5;
+    --bg: #f5f7fb;
+    --card: #fff;
+    --green: #12b76a;
+    --orange: #f79009;
+    --red: #f04438;
+    --purple: #7a5af8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header .grow { flex: 1; }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    border: none; background: #fff; padding: 7px 14px; cursor: pointer;
+    font-size: 13px; color: var(--sub); border-right: 1px solid var(--line);
+  }
+  .seg button:last-child { border-right: none; }
+  .seg button.active { background: var(--primary); color: #fff; }
+  input.token {
+    padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px;
+    width: 150px;
+  }
+  button.primary {
+    background: var(--primary); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; cursor: pointer;
+  }
+  main { padding: 22px 28px 60px; max-width: 1360px; margin: 0 auto; }
+  .grid { display: grid; gap: 16px; }
+  .kpis { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .card {
+    background: var(--card); border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(20, 40, 80, 0.06);
+  }
+  .kpi-label { font-size: 13px; color: var(--sub); display: flex; align-items: center; gap: 6px; }
+  .kpi-value { font-size: 30px; font-weight: 700; margin-top: 8px; letter-spacing: -0.5px; }
+  .kpi-sub { font-size: 12px; color: var(--weak); margin-top: 4px; }
+  .kpi-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  h2 { font-size: 15px; margin: 0 0 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  h2 .hint { font-size: 12px; color: var(--weak); font-weight: 400; }
+  .two { grid-template-columns: 1.6fr 1fr; }
+  .three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1080px) { .two, .three { grid-template-columns: 1fr; } }
+  section { margin-top: 16px; }
+  svg { display: block; width: 100%; height: auto; }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: var(--sub); margin-top: 10px; flex-wrap: wrap; }
+  .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--sub); font-weight: 500; font-size: 12px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 13px; }
+  .bar-name { width: 96px; color: var(--sub); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { flex: 1; height: 16px; background: #f0f3f9; border-radius: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--primary); border-radius: 8px; }
+  .bar-value { width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+  .funnel-step { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .funnel-name { width: 190px; font-size: 13px; }
+  .funnel-track { flex: 1; height: 26px; background: #f0f3f9; border-radius: 6px; overflow: hidden; }
+  .funnel-fill { height: 100%; background: linear-gradient(90deg, #4d8bff, #337aff); }
+  .funnel-value { width: 88px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .funnel-rate { width: 66px; text-align: right; color: var(--weak); font-size: 12px; }
+  .msg { padding: 40px; text-align: center; color: var(--sub); }
+  .err { color: var(--red); }
+  .notes { font-size: 12.5px; color: var(--sub); line-height: 1.9; }
+  .notes code { background: #f2f5fa; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+  .badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: var(--primary-light); color: var(--primary); }
+  .badge.warn { background: #fff4e5; color: var(--orange); }
+</style>
+</head>
+<body>
+<header>
+  <h1>去水印小程序 · 数据看板</h1>
+  <span class="grow"></span>
+  <div class="seg" id="range">
+    <button data-days="1">今日</button>
+    <button data-days="7">近 7 天</button>
+    <button data-days="14" class="active">近 14 天</button>
+    <button data-days="30">近 30 天</button>
+  </div>
+  <input class="token" id="token" placeholder="看板口令" />
+  <button class="primary" id="refresh">刷新</button>
+</header>
+
+<main>
+  <div id="msg" class="msg">正在加载…</div>
+
+  <div id="content" style="display:none">
+    <section class="grid kpis" id="kpis"></section>
+
+    <section class="card">
+      <h2>趋势 <span class="hint" id="trendHint"></span></h2>
+      <svg id="trend" viewBox="0 0 900 260" style="height:260px"></svg>
+      <div class="legend">
+        <span><i style="background:#337aff"></i>UV（按设备去重）</span>
+        <span><i style="background:#12b76a"></i>计算次数（解析成功）</span>
+        <span><i style="background:#f79009"></i>广告点击</span>
+        <span><i style="background:#7a5af8"></i>保存到相册</span>
+      </div>
+    </section>
+
+    <div class="grid two" style="margin-top:16px">
+      <section class="card">
+        <h2>转化漏斗 <span class="hint">区间累计</span></h2>
+        <div id="funnel"></div>
+      </section>
+      <section class="card">
+        <h2>广告明细 <span class="hint">自建埋点口径</span></h2>
+        <div id="ads"></div>
+      </section>
+    </div>
+
+    <div class="grid three" style="margin-top:16px">
+      <section class="card">
+        <h2>视频平台分布</h2>
+        <div id="platforms"></div>
+      </section>
+      <section class="card">
+        <h2>用户来源场景</h2>
+        <div id="scenes"></div>
+      </section>
+      <section class="card">
+        <h2>全天时段分布 <span class="hint">按小时</span></h2>
+        <div id="hours"></div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:16px">
+      <h2>事件明细 <span class="hint">区间内上报的事件次数</span></h2>
+      <div id="events"></div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h2>指标口径说明</h2>
+      <div class="notes">
+        <div><b>UV</b>：按匿名设备 ID（<code>uid</code>）去重。首次启动时生成并存在手机本地，清缓存或换设备会算成新用户。</div>
+        <div><b>计算次数</b>有两个口径，看板同时给出，用来交叉验证：<br />
+          · <span class="badge">服务端口径</span> 只有真的解析成功并扣了次数才 +1，客户端无法伪造，<b>建议作为对外口径</b>；<br />
+          · <span class="badge warn">客户端口径</span> 由 <code>parse_success</code> 埋点统计，能多看到「发起/失败/耗时」这些细节。</div>
+        <div><b>广告点击</b>：微信广告组件不提供点击回调（banner 只有 load/error，插屏和激励视频只有 show/close），所以分两类统计：<br />
+          · <code>用户主动点击</code>（method=intent）：用户点「看广告加次数」这类入口，口径最准；<br />
+          · <code>广告区域点击</code>（method=area_tap）：banner 广告位内的点击，是估算值（原生组件不一定冒泡）。<br />
+          真实曝光/点击请以微信公众平台「流量主 → 数据」为准，这里的数字用于和业务漏斗对齐。</div>
+        <div><b>数据来源</b>：<code>server/data/events/*.jsonl</code> 是原始流水，<code>server/data/rollup/*.json</code> 是按天汇总。</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+var state = { token: '', days: 14, data: null, timer: null };
+
+function $(id) { return document.getElementById(id); }
+
+function fmt(n) {
+  if (n === undefined || n === null) return '-';
+  return Number(n).toLocaleString('zh-CN');
+}
+
+function pct(a, b) {
+  if (!b) return '-';
+  return (a / b * 100).toFixed(1) + '%';
+}
+
+function readToken() {
+  var params = new URLSearchParams(location.search);
+  var fromUrl = params.get('token');
+  if (fromUrl) { localStorage.setItem('dash_token', fromUrl); }
+  return localStorage.getItem('dash_token') || '';
+}
+
+function api(path) {
+  return fetch(path, { headers: { 'cache-control': 'no-cache' } }).then(function (res) {
+    return res.json().then(function (json) {
+      if (json.code !== 0) throw new Error(json.msg || ('HTTP ' + res.status));
+      return json.data;
+    });
+  });
+}
+
+function load() {
+  $('msg').className = 'msg';
+  $('msg').textContent = '正在加载…';
+  api('/api/stats/summary?days=' + state.days + '&token=' + encodeURIComponent(state.token))
+    .then(function (data) {
+      state.data = data;
+      $('msg').style.display = 'none';
+      $('content').style.display = 'block';
+      render();
+    })
+    .catch(function (err) {
+      $('content').style.display = 'none';
+      $('msg').style.display = 'block';
+      $('msg').className = 'msg err';
+      $('msg').textContent = '加载失败：' + err.message + '（口令不对？在右上角输入 ADMIN_TOKEN 后点刷新）';
+    });
+}
+
+function card(label, value, sub, color) {
+  return '<div class="card"><div class="kpi-label">' +
+    (color ? '<span class="kpi-dot" style="background:' + color + '"></span>' : '') +
+    label + '</div><div class="kpi-value">' + value + '</div><div class="kpi-sub">' + (sub || '') + '</div></div>';
+}
+
+function render() {
+  var d = state.data;
+  var t = d.today;
+  var r = d.range_totals;
+  var label = state.days === 1 ? '今日' : '近 ' + state.days + ' 天';
+
+  $('trendHint').textContent = label + '：' + d.range.from + ' ~ ' + d.range.to;
+
+  $('kpis').innerHTML = [
+    card('UV（独立访客）', fmt(t.uv), '今日设备去重 · ' + label + '累计 ' + fmt(r.uv), '#337aff'),
+    card('新增用户', fmt(t.new_users), '首次使用的设备', '#7a5af8'),
+    card('计算次数', fmt(t.parse_success),
+      '今日解析成功 · 服务端口径 ' + fmt(t.server_parse_success) +
+      (t.provider_quota_exhausted ? ' · <span style="color:#d92d20">⚠ 服务商点数不足 ' + fmt(t.provider_quota_exhausted) + ' 次，去充值</span>' : ''),
+      '#12b76a'),
+    card('解析成功率', t.parse_start ? pct(t.parse_success, t.parse_start) : '-',
+      '发起 ' + fmt(t.parse_start) + ' / 失败 ' + fmt(t.parse_fail), '#0ba5ec'),
+    card('广告点击', fmt(t.ad_click), '主动 ' + fmt(t.ad_click_intent) + ' · 区域 ' + fmt(t.ad_click_area_tap), '#f79009'),
+    card('激励视频完播', fmt(t.ad_reward_success), '广告展示 ' + fmt(t.ad_show), '#ef6820'),
+    card('保存到相册', fmt(t.download_success),
+      '点击保存 ' + fmt(t.download_start) + ' · 服务端扣次数 ' + fmt(t.credit_consumed), '#12b76a'),
+    card('看广告领次数', fmt(t.reward_granted), '每人每天最多看若干次 · 解析被拦 ' + fmt(t.parse_blocked), '#ec4899'),
+    card('分享点击', fmt(t.share_click), '分享带来的新用户 ' + fmt(t.new_user_from_share), '#6172f3')
+  ].join('');
+
+  renderTrend(d.series);
+  renderFunnel(d.funnel);
+  renderAds(d.ad_by_type, r);
+  renderBars('platforms', d.platforms, function (item) { return item.name; });
+  renderBars('scenes', d.scenes, function (item) { return item.name; });
+  renderHours(d.hours);
+  renderEvents(d.events_top);
+}
+
+/* 折线图：纯手写 SVG，不引外部图表库 */
+function renderTrend(series) {
+  var svg = $('trend');
+  var H = 260, padL = 46, padR = 16, padT = 16, padB = 34;
+  // 按容器实际宽度生成 viewBox，宽屏下文字和线条不会被横向拉伸变形
+  var W = Math.max(520, Math.round(svg.clientWidth || 900));
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var innerW = W - padL - padR, innerH = H - padT - padB;
+  var n = series.length;
+
+  var keys = [
+    { key: 'uv', color: '#337aff' },
+    { key: 'parse_success', color: '#12b76a' },
+    { key: 'ad_click', color: '#f79009' },
+    { key: 'download_success', color: '#7a5af8' }
+  ];
+
+  var max = 1;
+  series.forEach(function (item) {
+    keys.forEach(function (k) { if (item[k.key] > max) max = item[k.key]; });
+  });
+  // 纵轴取一个好看的整数上限
+  var step = Math.pow(10, Math.floor(Math.log10(max)));
+  max = Math.ceil(max / step) * step;
+
+  function x(i) { return padL + (n <= 1 ? innerW / 2 : (innerW * i) / (n - 1)); }
+  function y(v) { return padT + innerH - (innerH * v) / max; }
+
+  var parts = [];
+  // 网格 + Y 轴刻度
+  for (var g = 0; g <= 4; g += 1) {
+    var gy = padT + (innerH * g) / 4;
+    var value = Math.round(max - (max * g) / 4);
+    parts.push('<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="#f0f3f9" stroke-width="1"/>');
+    parts.push('<text x="' + (padL - 8) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="#9aa3b2">' + value + '</text>');
+  }
+  // X 轴日期（最多显示 8 个，避免重叠）
+  var labelStep = Math.max(1, Math.ceil(n / 8));
+  series.forEach(function (item, i) {
+    if (i % labelStep !== 0 && i !== n - 1) return;
+    parts.push('<text x="' + x(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="#9aa3b2">' + item.date.slice(5) + '</text>');
+  });
+
+  keys.forEach(function (k) {
+    var points = series.map(function (item, i) { return x(i) + ',' + y(item[k.key] || 0); });
+    // 面积
+    parts.push('<polygon fill="' + k.color + '" opacity="0.07" points="' +
+      padL + ',' + (padT + innerH) + ' ' + points.join(' ') + ' ' + x(n - 1) + ',' + (padT + innerH) + '"/>');
+    parts.push('<polyline fill="none" stroke="' + k.color + '" stroke-width="2" stroke-linejoin="round" points="' + points.join(' ') + '"/>');
+    series.forEach(function (item, i) {
+      parts.push('<circle cx="' + x(i) + '" cy="' + y(item[k.key] || 0) + '" r="2.6" fill="#fff" stroke="' + k.color + '" stroke-width="2"><title>' +
+        item.date + ' ' + k.key + '：' + (item[k.key] || 0) + '</title></circle>');
+    });
+  });
+
+  svg.innerHTML = parts.join('');
+}
+
+function renderFunnel(funnel) {
+  var max = funnel.length ? funnel[0].value || 1 : 1;
+  var prev = null;
+  $('funnel').innerHTML = funnel.map(function (item) {
+    // 一个人可以点多次「一键去水印」，所以这一步会超过 100%，这种情况改成显示人均次数更好读
+    var rate = '';
+    if (prev) {
+      rate = item.value > prev ? '人均 ' + (item.value / (prev || 1)).toFixed(1) + ' 次' : pct(item.value, prev);
+    }
+    var html = '<div class="funnel-step">' +
+      '<div class="funnel-name">' + item.name + '</div>' +
+      '<div class="funnel-track"><div class="funnel-fill" style="width:' + Math.max(1, (item.value / max) * 100) + '%"></div></div>' +
+      '<div class="funnel-value">' + fmt(item.value) + '</div>' +
+      '<div class="funnel-rate">' + rate + '</div></div>';
+    prev = item.value;
+    return html;
+  }).join('');
+}
+
+function renderAds(byType, totals) {
+  var rows = [
+    ['全部广告', totals.ad_click, totals.ad_show, totals.ad_reward_success, totals.ad_load_fail]
+  ];
+  (byType || []).forEach(function (item) {
+    rows.push([item.type, item.click, item.show, item.reward_success, item.load_fail]);
+  });
+  var names = { rewarded_video: '激励视频', banner: 'Banner', interstitial: '插屏', unknown: '未知' };
+  $('ads').innerHTML = '<table><thead><tr><th>广告类型</th><th class="num">点击</th><th class="num">展示</th>' +
+    '<th class="num">完播</th><th class="num">加载失败</th></tr></thead><tbody>' +
+    rows.map(function (row) {
+      return '<tr><td>' + (names[row[0]] || row[0]) + '</td><td class="num">' + fmt(row[1]) +
+        '</td><td class="num">' + fmt(row[2]) + '</td><td class="num">' + fmt(row[3]) +
+        '</td><td class="num">' + fmt(row[4]) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function renderBars(id, list, nameOf) {
+  if (!list || !list.length) { $(id).innerHTML = '<div class="notes">暂无数据</div>'; return; }
+  var max = Math.max.apply(null, list.map(function (i) { return i.value; })) || 1;
+  $(id).innerHTML = list.map(function (item) {
+    return '<div class="bar-row"><div class="bar-name" title="' + nameOf(item) + '">' + nameOf(item) + '</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + Math.max(2, (item.value / max) * 100) + '%"></div></div>' +
+      '<div class="bar-value">' + fmt(item.value) + '</div></div>';
+  }).join('');
+}
+
+function renderHours(hours) {
+  if (!hours || !hours.length) { $('hours').innerHTML = '<div class="notes">暂无数据</div>'; return; }
+  var map = {};
+  hours.forEach(function (h) { map[h.hour] = h; });
+  var rows = [];
+  for (var h = 0; h < 24; h += 1) {
+    // 只显示有数据的时段，避免看板上一堆 0
+    if (map[h]) rows.push(map[h]);
+  }
+  var max = Math.max.apply(null, rows.map(function (i) { return Math.max(i.uv, i.parse, i.ad_click); })) || 1;
+  $('hours').innerHTML = rows.map(function (item) {
+    return '<div class="bar-row"><div class="bar-name">' + String(item.hour).padStart(2, '0') + ':00</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + Math.max(2, (item.uv / max) * 100) + '%"></div></div>' +
+      '<div class="bar-value" title="UV / 计算次数 / 广告点击">' + item.uv + '/' + item.parse + '/' + item.ad_click + '</div></div>';
+  }).join('') || '<div class="notes">暂无数据</div>';
+}
+
+function renderEvents(list) {
+  if (!list || !list.length) { $('events').innerHTML = '<div class="notes">暂无数据</div>'; return; }
+  $('events').innerHTML = '<table><thead><tr><th>事件名</th><th class="num">次数</th></tr></thead><tbody>' +
+    list.map(function (item) {
+      return '<tr><td><code>' + item.key + '</code></td><td class="num">' + fmt(item.value) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+document.getElementById('range').addEventListener('click', function (e) {
+  var btn = e.target.closest('button');
+  if (!btn) return;
+  state.days = Number(btn.dataset.days);
+  Array.prototype.forEach.call(this.querySelectorAll('button'), function (b) {
+    b.classList.toggle('active', b === btn);
+  });
+  load();
+});
+
+$('refresh').addEventListener('click', function () {
+  state.token = $('token').value.trim();
+  localStorage.setItem('dash_token', state.token);
+  load();
+});
+
+state.token = readToken();
+$('token').value = state.token;
+load();
+
+// 窗口尺寸变化时重画图表
+var resizeTimer = null;
+window.addEventListener('resize', function () {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function () {
+    if (state.data) renderTrend(state.data.series);
+  }, 200);
+});
+
+// 每 60 秒自动刷新一次
+state.timer = setInterval(function () {
+  if (!document.hidden) load();
+}, 60000);
+</script>
+</body>
+</html>

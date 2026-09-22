@@ -1,0 +1,163 @@
+/* 全局样式 */
+page {
+  --primary: #337aff;
+  --primary-dark: #245fe0;
+  --primary-light: #eaf1ff;
+  --text: #1b1f27;
+  --text-sub: #6b7280;
+  --text-weak: #9aa3b2;
+  --line: #eceff5;
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --danger: #ff5a5f;
+  --success: #12b76a;
+  --warning: #f79009;
+  --radius: 24rpx;
+  --shadow: 0 8rpx 30rpx rgba(28, 46, 92, 0.06);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+view,
+text,
+button,
+input,
+textarea {
+  box-sizing: border-box;
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20rpx;
+}
+
+.text-sub {
+  color: var(--text-sub);
+  font-size: 26rpx;
+}
+
+.text-weak {
+  color: var(--text-weak);
+  font-size: 24rpx;
+}
+
+/* 主按钮 */
+.btn-primary {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  border-radius: 48rpx;
+  background: linear-gradient(135deg, #4d8bff 0%, #337aff 60%, #2b6bf0 100%);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 12rpx 26rpx rgba(51, 122, 255, 0.28);
+  border: none;
+  padding: 0;
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-primary.btn-hover {
+  transform: translateY(2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(51, 122, 255, 0.24);
+  opacity: 0.92;
+}
+
+.btn-primary[disabled] {
+  background: #c9d4e6;
+  box-shadow: none;
+  color: #fff;
+}
+
+.btn-ghost {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  background: #fff;
+  color: var(--primary);
+  border: 2rpx solid rgba(51, 122, 255, 0.35);
+  font-size: 30rpx;
+  font-weight: 500;
+  text-align: center;
+}
+
+.btn-ghost::after {
+  border: none;
+}
+
+.btn-ghost.btn-hover {
+  background: var(--primary-light);
+}
+
+/* 广告容器 */
+.ad-box {
+  margin: 24rpx 0;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: #fff;
+}
+
+.ad-tag {
+  font-size: 20rpx;
+  color: var(--text-weak);
+  padding: 8rpx 4rpx 0;
+  display: block;
+}
+
+/* 空状态 */
+.empty {
+  padding: 120rpx 0;
+  text-align: center;
+  color: var(--text-weak);
+  font-size: 26rpx;
+}
+
+/* 公告条 */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  background: #fff8ec;
+  color: #a15c00;
+  border-radius: 16rpx;
+  padding: 18rpx 22rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+@keyframes qsy-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: qsy-fade-in 0.25s ease both;
+}

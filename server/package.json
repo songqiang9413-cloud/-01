@@ -1,0 +1,16 @@
+{
+  "name": "qushuiyin-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "去水印小程序后端：登录 / 解析 / 资源中转 / 埋点收集 / 数据看板（零依赖，node index.js 直接跑）",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "seed": "node tools/seed.js",
+    "smoke": "node tools/smoke-test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
