@@ -17,6 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const logger = require('./logger');
+const mysql = require('./mysql');
 const { dateKey, hourOf } = require('./utils');
 
 const DIR = {
@@ -47,13 +48,23 @@ function readJson(file, fallback) {
 }
 
 function writeJson(file, data) {
+  const text = JSON.stringify(data);
   try {
     const tmp = file + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(data), 'utf8');
+    fs.writeFileSync(tmp, text, 'utf8');
     fs.renameSync(tmp, file); // 先写临时文件再重命名，避免写一半进程挂掉导致文件损坏
   } catch (err) {
     logger.error('写入失败:', file, err.message);
+    return;
   }
+  // 顺手同步到 MySQL（只在配了数据库时生效）：
+  // 云托管容器没有持久硬盘，只写本地文件的话重新发布会全部清空
+  mysql.put(relativeKey(file), text);
+}
+
+/** 本地文件路径 -> 数据库里的 key，比如 data/rollup/2026-09-23.json -> rollup/2026-09-23 */
+function relativeKey(file) {
+  return path.relative(config.dataDir, file).split(path.sep).join('/');
 }
 
 function appendLine(file, line) {
@@ -398,6 +409,36 @@ function flush() {
   }
 }
 
+/* ----------------------------- 启动初始化（数据库） ----------------------------- */
+
+/** 重新从本地文件读一遍（数据库把数据捞回来之后要刷新内存里的缓存） */
+function reloadFromDisk() {
+  users = readJson(FILE.users, {});
+  uvIndex = readJson(FILE.uvIndex, {});
+  wallet = readJson(FILE.wallet, {});
+  rollupCache.clear();
+  quotaCache.clear();
+  usersDirty = false;
+  uvIndexDirty = false;
+  walletDirty = false;
+}
+
+/**
+ * 启动时调用：先连 MySQL 把历史数据捞回本地 data 目录，再重新读进内存。
+ * 顺序很重要 —— 业务代码全程按「文件」读写，所以必须先把文件准备好。
+ * 没配数据库 / 连不上时静默退回文件存储（mysql 模块内部会打日志）。
+ */
+async function initStorage() {
+  await mysql.init(config.dataDir);
+  reloadFromDisk();
+  return mysql.status();
+}
+
+/** 给 /api/health 用：当前到底在用数据库还是本地文件 */
+function storageStatus() {
+  return mysql.status();
+}
+
 /* ----------------------------- 次数钱包（保存到相册用） ----------------------------- */
 /*
  * 业务规则（按需求定的）：
@@ -612,6 +653,9 @@ module.exports = {
   writeEvents,
   recordServerEvent,
   flush,
+  initStorage,
+  storageStatus,
+  reloadFromDisk,
   walletSnapshot,
   grantAdCredits,
   consumeCredit,

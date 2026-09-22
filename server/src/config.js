@@ -148,6 +148,38 @@ const config = {
     trustOpenid: bool(process.env.TRUST_CLOUD_OPENID, true),
   },
 
+  /**
+   * 广告位：为什么不写死在客户端？
+   * 因为小程序改一次代码就要重新提交审核（等好几天），而广告位 ID 是「等流量主开通后」
+   * 才能拿到的。放服务端 = 在云托管控制台改个环境变量、重新发布，所有用户立刻生效。
+   * 小程序启动时会调 GET /api/client/config 把这里的值拉过去。
+   * 留空则小程序用自己 config/index.js 里的默认值（占位广告位不会真的展示广告）。
+   */
+  ad: {
+    // 总开关：false = 小程序整个广告逻辑走「无广告」分支（保存不再要次数）
+    enabled: bool(process.env.AD_ENABLED, true),
+    units: {
+      bannerHome: process.env.AD_UNIT_BANNER_HOME || '',
+      bannerResult: process.env.AD_UNIT_BANNER_RESULT || '',
+      // 激励视频：看一次 +rewardPerAd 次「保存」次数，必须填这个才有意义
+      rewardedVideo: process.env.AD_UNIT_REWARDED || '',
+      interstitial: process.env.AD_UNIT_INTERSTITIAL || '',
+    },
+    interstitialMinInterval: num(process.env.AD_INTERSTITIAL_MIN_INTERVAL, 60000),
+  },
+
+  // 数据库（可选）：配了就把数据存进 MySQL，云托管重新发布不会丢数据
+  mysql: {
+    // 云托管绑定 MySQL 后平台自动注入 MYSQL_ADDRESS，形如 10.0.0.5:3306
+    address: process.env.MYSQL_ADDRESS || '',
+    // 也支持拆开写（自己买数据库时用）
+    host: process.env.MYSQL_HOST || '',
+    port: num(process.env.MYSQL_PORT, 3306),
+    user: process.env.MYSQL_USERNAME || process.env.MYSQL_USER || '',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || 'qushuiyin',
+  },
+
   // 简单的频率限制
   rateLimit: {
     api: { windowMs: 60 * 1000, max: 300 },

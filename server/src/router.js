@@ -13,9 +13,12 @@ const parseHandler = require('./handlers/parse');
 const trackHandler = require('./handlers/track');
 const statsHandler = require('./handlers/stats');
 const proxyHandler = require('./handlers/proxy');
+const clientHandler = require('./handlers/client');
 
 const routes = [
   { method: 'POST', path: '/api/auth/login', handler: authHandler.login, auth: false, limit: 'api' },
+  // 客户端下发配置（广告位 ID / 业务规则）：不需要登录，启动时就要拿到
+  { method: 'GET', path: '/api/client/config', handler: clientHandler.clientConfig, auth: false, limit: 'api' },
   { method: 'POST', path: '/api/parse', handler: parseHandler.parse, auth: true, limit: 'parse' },
   { method: 'GET', path: '/api/quota', handler: parseHandler.quota, auth: true, limit: 'api' },
   { method: 'POST', path: '/api/quota/reward', handler: parseHandler.reward, auth: true, limit: 'api' },
@@ -45,6 +48,10 @@ const routes = [
             uptime: Math.round(process.uptime()),
             provider: config.parse.provider,
             wechat_configured: !!(config.wechat.appId && config.wechat.appSecret),
+            // 存储方式：看到 file 就说明没用上数据库（云托管重新发布会丢数据）
+            storage: store.storageStatus().connected ? 'mysql' : 'file',
+            db_connected: store.storageStatus().connected,
+            db_error: store.storageStatus().error || '',
             dates: store.listDates().slice(-3),
           },
         })

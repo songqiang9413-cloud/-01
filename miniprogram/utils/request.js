@@ -173,6 +173,13 @@ const api = {
   login: doLogin,
   ensureLogin,
 
+  /**
+   * 客户端下发配置（广告位 ID / 业务规则）
+   * 为什么走服务端：广告位要等「流量主」开通才有，而小程序改代码要重新提审几天；
+   * 放服务端就是「云托管改环境变量 -> 重新发布」，所有用户立刻生效。
+   */
+  clientConfig: () => request({ url: '/api/client/config', method: 'GET', needAuth: false, retryOn401: false }),
+
   /** 解析链接 */
   parse: (url) => ensureLogin().then(() => request({ url: '/api/parse', data: { url } })),
 

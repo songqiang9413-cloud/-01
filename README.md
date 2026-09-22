@@ -9,14 +9,16 @@
 ## 30 秒跑起来
 
 ```bash
-# 1. 启动后端（零依赖，不用 npm install，需要 Node 18+）
+# 1. 启动后端（默认零依赖，不用 npm install，需要 Node 18+）
+#    只有「要连 MySQL 存数据」时才需要：cd server && npm install mysql2
 cd server
 node index.js
 
 # 2. 另开一个终端，跑一遍自检（可选，但很推荐）
 cd server
 node tools/smoke-test.js
-# 想真跑一次解析（默认已是自建解析）：SMOKE_URL="https://www.douyin.com/video/作品ID" node tools/smoke-test.js
+# 想真跑一次解析（当前默认走第三方接口）：SMOKE_URL="https://www.douyin.com/video/作品ID" node tools/smoke-test.js
+# 验证「数据库存储」这块逻辑（不需要真的有一个 MySQL）：node tools/test-mysql.js
 ```
 
 ```
@@ -25,8 +27,7 @@ node tools/smoke-test.js
 详情 → 本地设置 → 勾选「不校验合法域名」
 ```
 
-粘一个抖音链接（整段分享文案也行）点「一键去水印」，能出视频就说明整条链路通了
-（默认已开自建解析，不用买接口）。
+粘一个抖音链接（整段分享文案也行）点「一键去水印」，能出视频就说明整条链路通了。
 
 数据看板：<http://127.0.0.1:8000/admin?token=admin123>
 
@@ -59,24 +60,29 @@ node tools/smoke-test.js
 │   ├── reset-data.js                清空 server/data（想重新开始统计时用）
 │   └── gen_images.py                生成 tabBar 图标和默认头像（Pillow）
 │
-├── server/                          Node.js 后端（零依赖）
+├── server/                          Node.js 后端（默认零依赖；只有连 MySQL 才需要装 mysql2）
 │   ├── index.js                     启动入口 + 静态资源
 │   ├── .env.example                 ★ 复制成 .env 再改
 │   ├── src/
 │   │   ├── config.js                配置（env / 业务参数 / 解析服务商 / 中转）
 │   │   ├── store.js                 ★ 数据层：事件落盘 + 按天汇总 + UV 去重 + 次数配额
+│   │   ├── mysql.js                 可选：把数据存进 MySQL（云托管重新发布不丢数据）
 │   │   ├── auth.js                  code2session + token 签名
 │   │   ├── router.js                路由
 │   │   ├── handlers/                login / parse / quota / track / stats / proxy
 │   │   └── providers/               解析服务商：mock（演示）/ http（第三方接口）
 │   ├── admin/index.html             数据看板（纯手写，不依赖任何 CDN）
 │   ├── tools/smoke-test.js          端到端自检
+│   ├── tools/test-mysql.js          数据库存储自测（用假驱动，不需要真数据库）
 │   ├── tools/seed.js                造演示数据
 │   └── data/                        运行后自动生成
 │
 └── docs/
     ├── 埋点方案.md                  ★ 指标体系、事件字典、上报机制、常见坑
-    └── 上线检查清单.md               ★ 从注册到提审的完整清单
+    ├── 上线检查清单.md               ★ 从注册到提审的完整清单
+    ├── 广告变现-去哪找广告.md        ★ 广告只有「流量主」一个正规来源（含开通路径）
+    ├── 云托管-GitHub部署步骤.md       ★ 绑定 GitHub 仓库自动部署（改环境变量不用提审）
+    └── 微信合法域名-200个.txt        粘进小程序后台 downloadFile 合法域名
 ```
 
 ---
@@ -158,10 +164,14 @@ node tools/smoke-test.js
 | 调解析超时 | `server/.env` 的 `PARSE_TIMEOUT`（服务商要求 60000 毫秒，已配好） |
 | 加/改直连域名 | 名单在 `server/data/direct-hosts.txt`，微信后台粘 `docs/微信合法域名-200个.txt`（同一份），改完重启服务 |
 | 服务商充值了 | 不用改代码，下一条解析自动恢复；看板「计算次数」卡片会提示点数不足 |
-| 测自建解析 | `cd server && node tools/test-parse.js "抖音链接" --download`（平台改版时先用它排查） |
+| 排查解析问题 | `cd server && node tools/test-parse.js "抖音链接" --download`（平台改版、用户反馈解析失败时先用它定位） |
 | 测第三方接口 | `cd server && node tools/test-parse.js "抖音链接" --provider=http --download` |
-| 填广告位 | `miniprogram/config/index.js` 的 `adUnits` |
-| 关掉广告调试 | `miniprogram/config/index.js` 里 `adEnabled: false` |
+| 填广告位 | 云托管控制台的环境变量 `AD_UNIT_REWARDED` 等（改完重新发布，**不用重新提审**）；本地开发就填 `miniprogram/config/index.js` 的 `adUnits` |
+| 广告去哪找 | 只有「流量主」一条正规路，见 [docs/广告变现-去哪找广告.md](docs/广告变现-去哪找广告.md) |
+| 关掉广告 | 服务端 `AD_ENABLED=0`，或客户端 `miniprogram/config/index.js` 里 `adEnabled: false` |
+| 数据存进数据库 | 配 `MYSQL_ADDRESS` / `MYSQL_USERNAME` / `MYSQL_PASSWORD`（云托管绑了 MySQL 会自动注入），`/api/health` 看到 `"storage":"mysql"` 就是生效了 |
+| 自测数据库这块 | `cd server && node tools/test-mysql.js`（用假驱动，不需要真数据库） |
+| 部署 / 重新发布 | [docs/云托管-GitHub部署步骤.md](docs/云托管-GitHub部署步骤.md)（绑定 GitHub 仓库后，`git push` 即可发布） |
 | 看原始埋点 | `server/data/events/<日期>.jsonl`，一行一条 |
 | 检查小程序代码 | `node tools/check-miniprogram.js`（改了页面后跑一下，能查出漏写的方法/资源） |
 | 部署到云托管 | `powershell -ExecutionPolicy Bypass -File tools\打包云托管.ps1`，再把 `dist\云托管部署包` 整个上传到云托管控制台 |

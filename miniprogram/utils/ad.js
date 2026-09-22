@@ -247,9 +247,22 @@ function bannerUnitBySlot(slot) {
   return map[slot] || '';
 }
 
+/**
+ * 重建广告实例。
+ * 服务端下发的广告位 ID 到达时（app.onLaunch 里那次请求）要调一次，
+ * 否则实例里还连着旧广告位，换了广告位也生效不了。
+ */
+function reset() {
+  rewardedAd = null;
+  rewardedFailed = false;
+  interstitialAd = null;
+  lastInterstitialAt = 0;
+}
+
 module.exports = {
   unitReady,
   isRewardedAvailable,
+  reset,
   preloadRewardedVideo,
   showRewardedVideo,
   showInterstitial,

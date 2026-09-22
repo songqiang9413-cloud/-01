@@ -10,7 +10,9 @@
 - 仓库地址：`https://github.com/songqiang9413-cloud/-01.git`
 - 分支：`main`
 - 仓库根目录有 `Dockerfile`，这是云托管构建用的入口文件
-  - 它做三件事：`COPY server/ ./`（把后端代码拷进镜像）、`ENV PORT=80`（云托管默认把流量打到 80 端口）、`CMD ["node","index.js"]`
+  - 它做四件事：`COPY server/package.json` + `npm install`（装可选的 mysql2）、`COPY server/ ./`（把后端代码拷进镜像）、
+    `ENV PORT=80`（云托管默认把流量打到 80 端口）、`CMD ["node","index.js"]`
+  - `mysql2` 声明在 `optionalDependencies` 里：npm 拉包失败也不会让构建失败，程序会退回本地文件存储继续跑
 - 仓库里**没有** `server/.env`（已加进 `.gitignore`），所以密钥必须配在控制台环境变量里，否则解析接口用不了
 
 ---
@@ -44,13 +46,27 @@
 | `TOKEN_SECRET` | 用户登录令牌的加密串，48 位随机字符 |
 | `ADMIN_TOKEN` | 看板口令，别泄露 |
 
+以下两组按需添加（详见 `dist/云托管环境变量-贴到控制台.txt`）：
+
+| 变量名 | 说明 |
+| --- | --- |
+| `MYSQL_ADDRESS` / `MYSQL_USERNAME` / `MYSQL_PASSWORD` | 绑定云托管 MySQL 后平台一般会自动注入。不配的话每次重新发布，UV / 计算次数 / 广告点击 / 用户余额都会清零 |
+| `AD_UNIT_REWARDED` | 激励视频广告位（**等「流量主」开通后再填**，这是收益来源） |
+| `AD_UNIT_BANNER_HOME` / `AD_UNIT_BANNER_RESULT` / `AD_UNIT_INTERSTITIAL` | 可选，其他广告位 |
+| `AD_ENABLED` | `0` 可以一键关掉全部广告逻辑 |
+
+> 广告位放在服务端的好处：换广告位只要「改环境变量 + 重新发布」，**不用重新提交小程序审核**。
+> 小程序启动时会调 `GET /api/client/config` 把这些值拉过去。
+
 > 改完环境变量需要**重新发布**一次才生效。
 
 ### 3. 验证
 
 - 浏览器打开 `https://<你的公网域名>/api/health`，应返回 `{"ok":true,...,"provider":"http"}`
+  - 同时看 `"storage"`：`mysql` = 数据存进数据库了；`file` = 只在容器本地（重新发布会丢），看 `db_error` 排查
 - 浏览器打开 `https://<你的公网域名>/admin?token=<ADMIN_TOKEN>`，能看到 UV / 计算次数 / 广告点击看板
 - 在微信开发者工具里，把 `miniprogram/config/index.js` 的 `CLOUD.envId` / `CLOUD.service` 填对，粘一个链接点解析，能出视频即可
+- 本机自检（不用数据库也能跑）：`cd server && node tools/test-mysql.js`
 
 ---
 
@@ -64,6 +80,7 @@
 
 ## 四、已知事项
 
-- **容器没有持久硬盘**：`server/data/` 里的埋点、UV、用户余额在每次重新发布后会清空。
-  要长期保留，需要把存储从本地文件换成云托管自带的 MySQL（环境变量 `MYSQL_ADDRESS` / `MYSQL_USERNAME` / `MYSQL_PASSWORD`）——TODO。
+- **容器没有持久硬盘**：不配 MySQL 的话，`server/data/` 里的埋点、UV、用户余额在每次重新发布后会清空。
+  配了 `MYSQL_*` 就会存进数据库（一张 `app_store` 表，key 是相对 data 目录的文件路径），重新发布不丢。
+  原始事件流水 `events/*.jsonl` 仍然只落本地磁盘 —— 它是排查用的日志，量最大、不需要长期保留。
 - **服务商点数**：解析按次扣服务商余额，余额为 0 时接口返回 `300`，看板会红字提示「服务商点数不足」，去服务商后台充值即可。

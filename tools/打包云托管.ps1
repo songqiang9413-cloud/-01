@@ -6,6 +6,9 @@
 
   产物：dist\云托管部署包\  —— 把这个文件夹整个上传到云托管控制台即可。
   注意：云托管容器没有持久硬盘，data 目录（埋点、余额）在重新发布后会清空。
+
+  现在更推荐「绑定 GitHub 仓库」的方式（git push 即发布，见 docs\云托管-GitHub部署步骤.md），
+  这个手动上传脚本留着当兜底。手动上传包里没有 node_modules，所以连不了 MySQL（会退回文件存储）。
 #>
 $ErrorActionPreference = 'Stop'
 

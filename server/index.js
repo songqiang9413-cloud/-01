@@ -140,25 +140,40 @@ function shutdown(signal) {
   } catch (err) {
     logger.error('保存数据失败', err);
   }
+  // 把还在排队等写库的数据推完（没配数据库时这个调用什么都不做）
+  const mysql = require('./src/mysql');
+  mysql.close().catch(() => {});
   server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 3000).unref();
+  setTimeout(() => process.exit(0), 3500).unref();
 }
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (err) => logger.error('uncaughtException', err));
 process.on('unhandledRejection', (err) => logger.error('unhandledRejection', err));
 
-server.listen(config.port, config.host, () => {
+function listen() {
+  server.listen(config.port, config.host, () => {
   const base = `http://127.0.0.1:${config.port}`;
   logger.info('服务已启动');
   logger.info('  本地地址    ', base);
   logger.info('  数据看板    ', `${base}/admin?token=${config.adminToken}`);
   logger.info('  健康检查    ', `${base}/api/health`);
-  logger.info('  解析服务商  ', config.parse.provider, config.parse.provider === 'mock' ? '（演示模式，不会真的解析）' : '');
+  logger.info(
+    '  解析服务商  ',
+    config.parse.provider,
+    config.parse.provider === 'mock' ? '（演示模式，不会真的解析）' : ''
+  );
+  const storage = store.storageStatus();
+  logger.info('  数据存储    ', storage.connected ? 'MySQL（重新发布不丢数据）' : '本地文件（重新发布会清空）');
   if (config.parse.fallbackProvider) {
     logger.info('  兜底服务商  ', config.parse.fallbackProvider, '（主服务商失败时自动切换，看板会记「自建降级次数」）');
   }
   logger.info('  数据目录    ', config.dataDir);
+  if (config.ad.units.rewardedVideo) {
+    logger.info('  激励视频位  ', config.ad.units.rewardedVideo, '（由服务端下发，改环境变量即可换广告位）');
+  } else {
+    logger.warn('  没有配 AD_UNIT_REWARDED：小程序拿不到激励视频广告位，保存会直接放行');
+  }
 
   if (!config.wechat.appId || !config.wechat.appSecret) {
     logger.warn('  未配置 WX_APPID / WX_SECRET：当前为开发模式，所有用户共用一个虚拟 openid');
@@ -172,6 +187,24 @@ server.listen(config.port, config.host, () => {
   if (config.parse.provider === 'mock') {
     logger.warn('  PARSE_PROVIDER=mock：解析接口会返回内置演示视频，接真实接口请改 .env');
   }
-});
+  if (storage.enabled && !storage.connected) {
+    logger.warn('  配了 MySQL 但没连上：', storage.error || '未知错误', '（后台会继续重试）');
+  }
+  });
+}
+
+/**
+ * 启动前先把数据库里的历史数据捞回本地文件，再开始接客。
+ * 为什么要有这一步：容器每次重新发布都是全新的磁盘，UV / 计算次数 / 广告点击
+ * 和用户余额都躺在数据库里，不先捞回来就统计就会从 0 开始。
+ */
+(async function main() {
+  try {
+    await store.initStorage();
+  } catch (err) {
+    logger.error('初始化存储失败，改用本地文件继续启动', err);
+  }
+  listen();
+})();
 
 module.exports = server;

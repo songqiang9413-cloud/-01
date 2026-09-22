@@ -36,6 +36,9 @@ App({
   onLaunch(options) {
     tracker.init({ launchOptions: options });
 
+    // 先用上次从服务端拉到的广告位（本地缓存）初始化，弱网时也不用等网络
+    this.applyClientConfig(storage.get('client_config', null));
+
     // 云托管：初始化云能力，之后 utils/request.js 会用 callContainer 走内网调用后端
     const cloud = gConfig.cloud || {};
     if (cloud.envId && wx.cloud) {
@@ -54,6 +57,7 @@ App({
     }
 
     this.silentLogin();
+    this.loadClientConfig();
     ad.preloadRewardedVideo();
   },
 
@@ -108,6 +112,62 @@ App({
         console.warn('[app] 静默登录失败', err);
         tracker.track('login_fail', { msg: (err && err.message) || 'unknown' });
       });
+  },
+
+  /**
+   * 拉一次服务端下发的配置（广告位 ID / 业务规则）。
+   * 为什么不在小程序里写死广告位：广告位要等「流量主」开通才有，而小程序改代码要重新提审；
+   * 放服务端就能「改环境变量 -> 重新发布」，用户无感切换。
+   */
+  loadClientConfig() {
+    return api
+      .clientConfig()
+      .then((data) => {
+        storage.set('client_config', data);
+        this.applyClientConfig(data);
+        return data;
+      })
+      .catch(() => null);
+  },
+
+  /** 把服务端下发的配置合并到全局配置上（ad.js 是实时读 gConfig 的，改了立刻生效） */
+  applyClientConfig(data) {
+    if (!data) return;
+    const units = data.ad_units || {};
+    // 服务端下发的是下划线命名，客户端内部统一用驼峰
+    const map = {
+      rewarded_video: 'rewardedVideo',
+      banner_home: 'bannerHome',
+      banner_result: 'bannerResult',
+      interstitial: 'interstitial',
+    };
+    let changed = false;
+    Object.keys(map).forEach((from) => {
+      const value = units[from];
+      // 空值表示「服务端没配」，保留小程序里的默认值，别把已有广告位覆盖成空
+      if (value && gConfig.adUnits[map[from]] !== value) {
+        gConfig.adUnits[map[from]] = value;
+        changed = true;
+      }
+    });
+    if (typeof data.ad_enabled === 'boolean') {
+      gConfig.adEnabled = data.ad_enabled;
+    }
+    if (typeof data.ad_interstitial_min_interval === 'number') {
+      gConfig.interstitialMinInterval = data.ad_interstitial_min_interval;
+    }
+    if (data.business) {
+      const b = data.business;
+      if (b.reward_per_ad) gConfig.business.rewardPerAd = b.reward_per_ad;
+      if (b.valid_hours) gConfig.business.validHours = b.valid_hours;
+      if (b.max_reward_per_day) gConfig.business.maxRewardPerDay = b.max_reward_per_day;
+      if (b.parse_daily_limit) gConfig.business.parseDailyLimit = b.parse_daily_limit;
+    }
+    if (changed) {
+      // 广告位换了要重建实例，否则还连着旧广告位
+      ad.reset();
+      ad.preloadRewardedVideo();
+    }
   },
 
   onReady(callback) {

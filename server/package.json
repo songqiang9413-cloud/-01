@@ -12,5 +12,9 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "_note": "mysql2 只放在 optionalDependencies：它是可选能力，装不上时服务会退回本地文件存储继续跑，不会因为 npm 拉包失败而整个构建失败。",
+  "optionalDependencies": {
+    "mysql2": "^3.11.0"
   }
 }
