@@ -162,7 +162,7 @@ node tools/smoke-test.js
 | 改业务规则 | `server/.env` 里的 `REWARD_PER_AD`（送几次）/ `REWARD_VALID_HOURS`（有效期）/ `MAX_REWARD_PER_DAY`（每天看几次上限） |
 | 换解析接口 | `server/.env` 里 `PARSE_PROVIDER`：现在是 `http`（你买的第三方）；`mock` 演示；`selfhosted` 自建（代码还在，没启用） |
 | 调解析超时 | `server/.env` 的 `PARSE_TIMEOUT`（服务商要求 60000 毫秒，已配好） |
-| 加/改直连域名 | 名单在 `server/data/direct-hosts.txt`，微信后台粘 `docs/微信合法域名-200个.txt`（同一份），改完重启服务 |
+| 加/改直连域名 | 服务端名单 `server/data/direct-hosts.txt`（改完重启服务）；微信后台要粘 `docs/微信合法域名-200个.txt`（200 行，带 https:// 前缀，贴进 downloadFile 合法域名，一次贴全） |
 | 服务商充值了 | 不用改代码，下一条解析自动恢复；看板「计算次数」卡片会提示点数不足 |
 | 排查解析问题 | `cd server && node tools/test-parse.js "抖音链接" --download`（平台改版、用户反馈解析失败时先用它定位） |
 | 测第三方接口 | `cd server && node tools/test-parse.js "抖音链接" --provider=http --download` |
