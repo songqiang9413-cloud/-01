@@ -154,6 +154,21 @@ function reward(ctx) {
  */
 function consume(ctx) {
   const { body, res, user } = ctx;
+  // 广告位还没开通（还没拿到微信「流量主」）时进来「免费模式」：
+  // 这会儿用户根本看不了广告，硬扣次数会把所有人挡在保存按钮前面，
+  // 表现就是「提示保存次数不够，又不弹广告」。
+  // 等环境变量里填上 AD_UNIT_REWARDED，这里自动恢复正常扣次数，小程序不用改也不用重新提审。
+  if (!config.ad.enabled || !config.ad.units.rewardedVideo) {
+    const freeWallet = store.walletSnapshot(user.openid);
+    store.recordServerEvent('credit_free_save', { openid: user.openid, reason: 'ad_not_ready' });
+    sendOk(res, {
+      scene: body.scene || '',
+      media_type: body.media_type || '',
+      wallet: freeWallet,
+      free_mode: true,
+    });
+    return;
+  }
   const result = store.consumeCredit(user.openid);
   if (!result.ok) {
     sendError(res, 1003, '保存次数用完了，看个广告就能继续保存');

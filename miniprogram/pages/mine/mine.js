@@ -88,6 +88,12 @@ Page({
 
   /** 主动看广告加次数（主要入口在结果页点保存时，这里是给「想提前多攒几次」的用户留的） */
   onWatchAd() {
+    // 广告位没开通时点按钮什么都不会发生，给一句人话
+    if (!ad.isRewardedAvailable()) {
+      tracker.track('reward_btn_no_ad', { scene: 'mine_credit' });
+      wx.showToast({ title: '广告还没开放，直接保存就行', icon: 'none' });
+      return;
+    }
     ad.showRewardedVideo({ position: 'mine_reward', scene: 'mine_credit' }).then((result) => {
       if (!result.isEnded) {
         if (!result.unavailable && !result.failed) {

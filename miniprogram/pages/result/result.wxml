@@ -54,7 +54,8 @@
           还能保存 <text class="credit-num">{{credits}}</text> 次<text wx:if="{{remainHours > 0}}">，{{remainHours}} 小时内有效</text>
         </block>
         <block wx:else>
-          保存前看一次广告，可得 {{rewardPerAd}} 次（{{validHours}} 小时内有效）
+          <block wx:if="{{adReady}}">保存前看一次广告，可得 {{rewardPerAd}} 次（{{validHours}} 小时内有效）</block>
+          <block wx:else>当前保存免费，直接点上面的按钮就行</block>
         </block>
       </view>
 

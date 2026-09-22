@@ -14,6 +14,8 @@ Page({
     remainHours: 0,
     rewardPerAd: gConfig.business.rewardPerAd,
     validHours: gConfig.business.validHours,
+    // 广告位是否已开通：没开通时保存免费，文案也跟着变
+    adReady: ad.isRewardedAvailable(),
     detectPlatform: 'unknown',
     detectPlatformName: '',
     // 广告：广告位 ID 还是占位值时不渲染 <ad>，避免开发者工具里一直报错
@@ -26,7 +28,7 @@ Page({
     steps: [
       { n: '1', t: '复制链接', d: '在短视频 App 里点分享 → 复制链接' },
       { n: '2', t: '粘贴解析', d: '回到这里点「粘贴链接」→「一键去水印」' },
-      { n: '3', t: '保存相册', d: '在结果页点「保存到相册」，看一小段广告就能存 10 次' },
+      { n: '3', t: '保存相册', d: '在结果页点「保存到相册」就行' },
     ],
   },
 
@@ -42,6 +44,8 @@ Page({
   onShow() {
     tracker.pageView('pages/index/index');
     app.refreshWallet().then((wallet) => this.applyWallet(wallet));
+    // 服务端可能刚下发广告位配置，这里顺手同步一次
+    this.setData({ adReady: ad.isRewardedAvailable() });
     ad.preloadRewardedVideo();
   },
 

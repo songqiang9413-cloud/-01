@@ -37,7 +37,8 @@
       <text>还能保存 <text class="quota-num">{{credits}}</text> 次<text wx:if="{{remainHours > 0}}">（{{remainHours}} 小时内有效）</text></text>
     </block>
     <block wx:else>
-      <text>解析免费 · 保存时看一次广告可得 <text class="quota-num">{{rewardPerAd}}</text> 次</text>
+      <text wx:if="{{adReady}}">解析免费 · 保存时看一次广告可得 <text class="quota-num">{{rewardPerAd}}</text> 次</text>
+      <text wx:else>解析免费 · 保存也免费</text>
     </block>
   </view>
 

@@ -22,6 +22,8 @@ Page({
     remainHours: 0,
     rewardPerAd: gConfig.business.rewardPerAd,
     validHours: gConfig.business.validHours,
+    // 广告位是否已开通：没开通时保存直接免费放行，不弹「看广告」
+    adReady: ad.isRewardedAvailable(),
   },
 
   onLoad(options) {
@@ -53,6 +55,8 @@ Page({
     tracker.pageView('pages/result/result');
     // 回到结果页时刷新一下钱包（可能刚在别处看过广告）
     app.refreshWallet().then((wallet) => this.applyWallet(wallet));
+    // 服务端可能刚下发广告位配置，这里顺手同步一次
+    this.setData({ adReady: ad.isRewardedAvailable() });
   },
 
   onHide() {
@@ -114,7 +118,8 @@ Page({
    * @returns Promise<boolean> true = 可以继续保存
    *
    * 流程：先让服务端扣 1 次 → 扣成功就放行；
-   *       次数不够（1003）就弹激励视频 → 看完领 10 次 → 再扣一次。
+   *       次数不够（1003）：广告位已开通就弹激励视频 → 看完领 10 次 → 再扣一次；
+   *       广告位还没开通（没有「流量主」）就直接放行，不拦人。
    */
   ensureCredit(retried) {
     const record = this.data.record;
@@ -131,11 +136,22 @@ Page({
       })
       .catch((err) => {
         if (err.code === 1003 && !retried) {
-          // 次数用完了 → 引导看广告
-          return this.watchAdForCredit().then((ok) => (ok ? this.ensureCredit(true) : false));
+          // 次数用完了。
+          // 广告位还没开通（还没拿到「流量主」）时不能拦用户，直接免费放行：
+          // 旧版本这种情况会走「引导看广告 → 放行 → 再扣一次 → 又失败 → 拦住」，
+          // 表现就是「提示保存次数不够、又不弹广告」，用户根本保存不了。
+          if (!ad.isRewardedAvailable()) {
+            tracker.track('credit_free_pass', { reason: 'ad_not_configured', position: 'result_save' });
+            return true;
+          }
+          // 有广告位：只有真领到次数才重新扣一次，其余情况按广告结果决定放不放行
+          return this.watchAdForCredit().then((result) => {
+            if (result === 'granted') return this.ensureCredit(true);
+            return result === 'failopen';
+          });
         }
         if (err.code === 1003) {
-          wx.showToast({ title: '保存次数还是不够，稍后再试', icon: 'none' });
+          wx.showToast({ title: '保存次数不够了，稍后再试', icon: 'none' });
           return false;
         }
         // 网络抖动之类的异常：不拦用户，放行并记一笔。
@@ -145,13 +161,19 @@ Page({
       });
   },
 
-  /** 弹激励视频，看完领次数 */
+  /**
+   * 弹激励视频，看完领次数
+   * @returns Promise<'granted' | 'failopen' | false>
+   *   granted  = 看完了，次数已经到账（调用方要重新扣一次）
+   *   failopen = 广告放不出来，这次放行保存
+   *   false    = 用户自己放弃 / 没看完
+   */
   watchAdForCredit() {
     tracker.track('save_need_ad', { position: 'result_save' });
     return new Promise((resolve) => {
       if (!ad.isRewardedAvailable()) {
         this.adFailPass('广告位没配置');
-        resolve(true);
+        resolve('failopen');
         return;
       }
       wx.showModal({
@@ -185,7 +207,7 @@ Page({
         if (result.unavailable || result.failed) {
           // 广告没放出来不赖用户
           this.adFailPass('广告没加载出来');
-          return true;
+          return 'failopen';
         }
         wx.showToast({ title: '看完广告才能获得保存次数哦', icon: 'none' });
         return false;
@@ -201,7 +223,7 @@ Page({
             scene: 'save',
           });
           wx.showToast({ title: '已获得 ' + data.added + ' 次', icon: 'none' });
-          return true;
+          return 'granted';
         })
         .catch((err) => {
           tracker.track('reward_claim_fail', { code: err.code, msg: err.message, scene: 'save' });
