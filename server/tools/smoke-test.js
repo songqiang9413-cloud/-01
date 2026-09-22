@@ -43,7 +43,7 @@ async function api(pathname, options = {}, token) {
 }
 
 (async function main() {
-  console.log('\n=== 去水印小程序后端 冒烟测试 ===');
+  console.log('\n=== 清月去水印 后端冒烟测试 ===');
   console.log('目标地址:', BASE, '\n');
 
   const health = await api('/api/health', { method: 'GET' });

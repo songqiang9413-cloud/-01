@@ -1,5 +1,5 @@
 {
-  "description": "去水印小程序（项目配置，appid 请替换成自己的）",
+  "description": "清月去水印（项目配置，appid 请替换成自己的）",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -49,7 +49,7 @@
   "compileType": "miniprogram",
   "libVersion": "3.5.5",
   "appid": "wxd88b9a34521c2cbc",
-  "projectname": "qu-shuiyin",
+  "projectname": "qingyue-qushuiyin",
   "condition": {},
   "editorSetting": {
     "tabIndent": "insertSpaces",

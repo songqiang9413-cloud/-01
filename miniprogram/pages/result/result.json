@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "去水印结果",
+  "navigationBarTitleText": "解析结果",
   "usingComponents": {
     "privacy-popup": "/components/privacy-popup/index"
   }

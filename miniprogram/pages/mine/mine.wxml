@@ -65,6 +65,6 @@
 
   <view class="mine-footer">
     <view class="text-weak">解析结果仅供个人合法用途，请尊重原作者版权</view>
-    <view class="version">v{{version}}</view>
+    <view class="version">清月去水印 v{{version}}</view>
   </view>
 </view>

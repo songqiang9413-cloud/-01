@@ -1,5 +1,7 @@
 {
   "miniprogramRoot": "miniprogram/",
+  "description": "清月去水印（项目根目录配置：小程序代码在 miniprogram/ 下）",
+  "projectname": "qingyue-qushuiyin",
   "setting": {
     "urlCheck": false,
     "es6": true,
