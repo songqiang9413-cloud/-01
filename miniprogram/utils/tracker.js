@@ -20,6 +20,9 @@ const gConfig = require('../config/index');
 const storage = require('./storage');
 const device = require('./device');
 const util = require('./util');
+// 上报走和业务请求同一条通道：线上 apiBase 是 127.0.0.1，
+// 直接用 wx.request 打它的话真机会全军覆没（这就是 UV / 计算次数 / 广告点击全是 0 的原因）
+const transport = require('./transport');
 
 const SDK_VERSION = '1.1.0';
 
@@ -180,23 +183,22 @@ function send(events) {
       }),
       events,
     };
-    wx.request({
-      url: gConfig.apiBase + '/api/track',
-      method: 'POST',
-      timeout: 10000,
-      header: { 'content-type': 'application/json' },
-      data,
-      success(res) {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data || {});
-        } else {
+    transport.send(
+      { url: '/api/track', method: 'POST', data, timeout: 10000 },
+      { 'content-type': 'application/json' },
+      {
+        success(res) {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(res.data || {});
+            return;
+          }
           reject(new Error('HTTP ' + res.statusCode));
-        }
-      },
-      fail(err) {
-        reject(err);
-      },
-    });
+        },
+        fail(err) {
+          reject(err);
+        },
+      }
+    );
   });
 }
 

@@ -45,6 +45,13 @@
 | `PROXY_DIRECT_HOSTS` | 固定 `*`：云托管没有备案域名做中转，素材一律直连 CDN |
 | `TOKEN_SECRET` | 用户登录令牌的加密串，48 位随机字符 |
 | `ADMIN_TOKEN` | 看板口令，别泄露 |
+| `WX_APPID` / `WX_SECRET` | 小程序 AppID / AppSecret（公众平台 → 开发管理 → 开发设置）。配了才能用 `wx.login` 换 openid |
+| `TRUST_CLOUD_OPENID` | `0` = 不信任请求头里的 openid，只认自己签发的登录令牌（**公网访问开着时必配 0**，否则别人伪造 `x-wx-openid` 头就能白刷你的解析费） |
+
+> ⚠️ **上线前必须确认**：`TRUST_CLOUD_OPENID=0` + `WX_APPID`/`WX_SECRET` 三者要一起配。
+> 只配 `WX_APPID`/`WX_SECRET`、不关信任，等于门开着还挂了把锁。
+> 自检方法：不带任何令牌、只往请求头塞一个 `x-wx-openid` 调 `/api/quota`，
+> 返回 401 才算安全，返回 200 就是还能被白刷。
 
 以下两组按需添加（详见 `dist/云托管环境变量-贴到控制台.txt`）：
 

@@ -4,54 +4,12 @@
  * - 401 自动重新登录并重试一次
  * - 统一错误文案
  */
-const gConfig = require('../config/index');
 const storage = require('./storage');
 const tracker = require('./tracker');
+// 发请求的通道单独放在 transport.js，埋点上报也用同一条，避免两条路走岔
+const transport = require('./transport');
 
 let reloginPromise = null;
-
-/** GET 请求的参数拼到路径上（云托管的 callContainer 不吃 wx.request 那套 data 转 query） */
-function withQuery(path, data) {
-  const keys = Object.keys(data || {});
-  if (!keys.length) return path;
-  const qs = keys
-    .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
-    .join('&');
-  return path + (path.indexOf('?') > -1 ? '&' : '?') + qs;
-}
-
-/**
- * 发请求：两种通道二选一
- * - 云托管：填了 cloud.envId 就走微信内网专线（免域名、免备案）
- * - 自建服务器：普通 wx.request（需要自己的 https 域名 + 备案）
- * 两者的回调格式一样（statusCode / data），所以上层逻辑不用改。
- */
-function send(opts, header, handlers) {
-  const cloud = gConfig.cloud || {};
-  if (cloud.envId) {
-    const isGet = opts.method === 'GET';
-    wx.cloud.callContainer({
-      config: { env: cloud.envId },
-      path: isGet ? withQuery(opts.url, opts.data) : opts.url,
-      method: opts.method,
-      header: Object.assign({ 'X-WX-SERVICE': cloud.service || 'server' }, header),
-      data: isGet ? {} : opts.data || {},
-      timeout: gConfig.requestTimeout,
-      success: handlers.success,
-      fail: handlers.fail,
-    });
-    return;
-  }
-  wx.request({
-    url: gConfig.apiBase + opts.url,
-    method: opts.method,
-    data: opts.data || {},
-    header,
-    timeout: gConfig.requestTimeout,
-    success: handlers.success,
-    fail: handlers.fail,
-  });
-}
 
 function getToken() {
   return storage.get('token', '');
@@ -79,7 +37,7 @@ function request(options) {
       header.Authorization = 'Bearer ' + token;
     }
 
-    send(opts, header, {
+    transport.send(opts, header, {
       success(res) {
         const body = res.data || {};
         if (res.statusCode === 401 && opts.retryOn401) {
