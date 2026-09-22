@@ -172,6 +172,7 @@ node tools/smoke-test.js
 | 数据存进数据库 | 配 `MYSQL_ADDRESS` / `MYSQL_USERNAME` / `MYSQL_PASSWORD`（云托管绑了 MySQL 会自动注入），`/api/health` 看到 `"storage":"mysql"` 就是生效了 |
 | 自测数据库这块 | `cd server && node tools/test-mysql.js`（用假驱动，不需要真数据库） |
 | 部署 / 重新发布 | [docs/云托管-GitHub部署步骤.md](docs/云托管-GitHub部署步骤.md)（绑定 GitHub 仓库后，`git push` 即可发布） |
+| 重新生成头像 | `powershell -ExecutionPolicy Bypass -File tools\make-avatar.ps1`（改配色/排版后重跑，出图在 `assets/logo/`） |
 | 看原始埋点 | `server/data/events/<日期>.jsonl`，一行一条 |
 | 检查小程序代码 | `node tools/check-miniprogram.js`（改了页面后跑一下，能查出漏写的方法/资源） |
 | 部署到云托管 | `powershell -ExecutionPolicy Bypass -File tools\打包云托管.ps1`，再把 `dist\云托管部署包` 整个上传到云托管控制台 |
