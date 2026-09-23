@@ -1,5 +1,5 @@
 {
-  "description": "清月去水印（项目配置，appid 请替换成自己的）",
+  "description": "清月水印处理工具（项目配置，appid 请替换成自己的）",
   "packOptions": {
     "ignore": [],
     "include": []

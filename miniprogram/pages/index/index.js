@@ -247,7 +247,7 @@ Page({
   onShareAppMessage() {
     tracker.track('share_click', { channel: 'button', page: 'index' });
     const share = app.buildShare();
-    share.title = '清月去水印｜粘贴链接就能存无水印原片';
+    share.title = '清月水印处理工具｜粘贴链接就能存无水印原片';
     return share;
   },
 

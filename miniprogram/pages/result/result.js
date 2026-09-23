@@ -393,7 +393,7 @@ Page({
   onShareAppMessage() {
     tracker.track('share_click', { channel: 'button', page: 'result' });
     const share = app.buildShare();
-    share.title = '我用「清月去水印」存到了无水印原片，你也试试';
+    share.title = '我用「清月水印处理工具」存到了无水印原片，你也试试';
     return share;
   },
 });

@@ -9,7 +9,7 @@
     "backgroundTextStyle": "light",
     "backgroundColor": "#f4f6fb",
     "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTitleText": "清月去水印",
+    "navigationBarTitleText": "清月水印处理工具",
     "navigationBarTextStyle": "black"
   },
   "tabBar": {

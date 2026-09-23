@@ -99,7 +99,7 @@ module.exports = {
 
   // 分享文案
   share: {
-    title: '清月去水印｜粘贴链接就能存无水印原片',
+    title: '清月水印处理工具｜粘贴链接就能存无水印原片',
     path: '/pages/index/index',
   },
 };
